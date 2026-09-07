@@ -24,7 +24,7 @@ export const createRazorpayOrder = async (req: Request, res: Response): Promise<
       return;
     }
 
-    if (order.payment.status === 'COMPLETED') {
+    if (order.payment.status === 'SUCCESS') {
       res.status(400).json({ success: false, error: { message: 'Order is already paid' } });
       return;
     }
@@ -84,7 +84,7 @@ export const verifyPayment = async (req: Request, res: Response): Promise<void> 
       await prisma.payment.update({
         where: { id: order.payment.id },
         data: {
-          status: 'COMPLETED',
+          status: 'SUCCESS',
           gatewayPaymentId: razorpay_payment_id,
           gatewaySignature: razorpay_signature
         }

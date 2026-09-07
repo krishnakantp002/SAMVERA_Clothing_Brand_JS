@@ -7,9 +7,7 @@ import { registerSchema, loginSchema } from '../validation/schemas';
 const prisma = new PrismaClient();
 
 const generateTokens = (userId: string) => {
-  const token = jwt.sign({ userId }, process.env.JWT_SECRET as string, {
-    expiresIn: process.env.JWT_EXPIRY || '7d',
-  });
+  const token = jwt.sign({ userId }, process.env.JWT_SECRET as string);
   return token;
 };
 

@@ -45,6 +45,10 @@ export const createCheckoutOrder = async (req: Request, res: Response): Promise<
       
       orderItemsData.push({
         variantId: variant.id,
+        productId: variant.productId,
+        productName: variant.product.name,
+        variantName: variant.sku, // using sku as variant name fallback
+        sku: variant.sku,
         quantity: item.quantity,
         price: itemPrice,
         total: totalItemPrice
@@ -80,8 +84,8 @@ export const createCheckoutOrder = async (req: Request, res: Response): Promise<
         },
         payment: {
           create: {
-            method: paymentMethod === 'CASH_ON_DELIVERY' ? 'COD' : 'RAZORPAY',
-            status: paymentMethod === 'CASH_ON_DELIVERY' ? 'PENDING' : 'INITIATED',
+            method: paymentMethod === 'CASH_ON_DELIVERY' ? 'COD' : 'CARD',
+            status: 'PENDING',
             amount: total,
             idempotencyKey: `IDMP-${Date.now()}`
           }

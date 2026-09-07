@@ -100,7 +100,7 @@ export const getProductBySlug = async (req: Request, res: Response): Promise<voi
     const { slug } = req.params;
 
     const product = await prisma.product.findUnique({
-      where: { slug, status: 'ACTIVE', deletedAt: null },
+      where: { slug: slug as string, status: 'ACTIVE', deletedAt: null },
       include: {
         category: true,
         brand: true,
@@ -183,7 +183,7 @@ export const deleteProduct = async (req: Request, res: Response): Promise<void> 
     // Instead of hard delete, we set status to ARCHIVED or delete if no relations exist
     // For safety, let's just do a soft delete via status
     await prisma.product.update({
-      where: { id },
+      where: { id: id as string },
       data: { status: 'ARCHIVED' }
     });
     
