@@ -8,6 +8,8 @@ import { PrismaClient } from '@prisma/client';
 
 import authRoutes from './routes/auth.routes';
 import productRoutes from './routes/product.routes';
+import checkoutRoutes from './routes/checkout.routes';
+import paymentRoutes from './routes/payment.routes';
 
 dotenv.config();
 
@@ -28,6 +30,8 @@ app.use(morgan('dev'));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/checkout', checkoutRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {
