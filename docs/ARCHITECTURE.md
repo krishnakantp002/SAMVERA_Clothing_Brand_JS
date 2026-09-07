@@ -8,7 +8,7 @@
 
 ## 1. System Overview
 
-SAMVERA follows a **modular monolith** architecture built on Next.js, with clear domain boundaries that can be extracted into services if scale demands it.
+SAMVERA follows a **decoupled architecture** separating the frontend (Next.js) from the backend API (Node.js/Express) to ensure easy deployment, independent scaling, and a clean separation of concerns.
 
 ```mermaid
 graph TB
@@ -16,53 +16,36 @@ graph TB
         Browser["Browser / Mobile"]
     end
 
-    subgraph Edge["Edge Layer"]
-        CDN["CDN (Vercel Edge)"]
-        DNS["DNS"]
+    subgraph Frontend["Frontend Workspace (Next.js)"]
+        SSR["React Server Components"]
+        UI["React Client Components"]
+        Zustand["Zustand State"]
     end
 
-    subgraph App["Next.js Application"]
-        SSR["SSR / SSG Pages"]
-        API["API Routes"]
-        SA["Server Actions"]
-        MW["Middleware (Auth, Rate Limit)"]
-    end
-
-    subgraph Services["Service Layer"]
-        AuthSvc["Auth Service"]
-        ProductSvc["Product Service"]
-        CartSvc["Cart Service"]
-        OrderSvc["Order Service"]
-        PaymentSvc["Payment Service"]
-        InventorySvc["Inventory Service"]
-        ShippingSvc["Shipping Service"]
-        CouponSvc["Coupon Service"]
-        ReviewSvc["Review Service"]
-        NotifSvc["Notification Service"]
-        AnalyticsSvc["Analytics Service"]
-    end
-
-    subgraph Data["Data Layer"]
+    subgraph Backend["Backend Workspace (Express)"]
+        API["Express REST API"]
+        Services["Service Layer (Business Logic)"]
+        AuthSvc["Auth & Middleware"]
         Prisma["Prisma ORM"]
+    end
+
+    subgraph Database
         PG["PostgreSQL"]
     end
 
     subgraph External["External Services"]
-        Razorpay["Razorpay"]
-        CloudStorage["Cloudinary / S3"]
-        EmailSvc["Email (Resend)"]
-        ShipProvider["Shipping Provider"]
+        Razorpay["Razorpay Payments"]
+        CloudStorage["Cloudinary"]
     end
 
-    Browser --> CDN --> SSR
-    Browser --> CDN --> API
-    SSR --> MW --> SA --> Services
-    API --> MW --> Services
-    Services --> Prisma --> PG
-    PaymentSvc --> Razorpay
-    ProductSvc --> CloudStorage
-    NotifSvc --> EmailSvc
-    ShippingSvc --> ShipProvider
+    Browser --> Frontend
+    Frontend --> API
+    Browser --> API
+    API --> Services
+    Services --> Prisma
+    Prisma --> PG
+    Services --> Razorpay
+    Services --> CloudStorage
 ```
 
 ---
