@@ -8,6 +8,25 @@ import { ShoppingBag, User, Search, Menu, X } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
+import { useCartStore } from '@/stores/cartStore';
+
+// Hydration-safe cart count component
+function CartCountBadge() {
+  const [mounted, setMounted] = React.useState(false);
+  const itemCount = useCartStore((state) => state.getItemCount());
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || itemCount === 0) return null;
+
+  return (
+    <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white transition-transform group-hover:scale-110">
+      {itemCount}
+    </span>
+  );
+}
 
 export function Navbar() {
   const pathname = usePathname();
@@ -74,15 +93,13 @@ export function Navbar() {
             <User className="h-5 w-5" />
           </Link>
           
-          <Link
-            href="/cart"
+          <button
+            onClick={() => useCartStore.getState().setIsOpen(true)}
             className="group relative flex items-center text-surface-300 transition-colors hover:text-white"
           >
             <ShoppingBag className="h-5 w-5" />
-            <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white transition-transform group-hover:scale-110">
-              0
-            </span>
-          </Link>
+            <CartCountBadge />
+          </button>
 
           {/* Mobile Menu Toggle */}
           <button

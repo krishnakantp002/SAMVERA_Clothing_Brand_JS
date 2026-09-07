@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 import { formatPrice, calcDiscount } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useCartStore } from '@/stores/cartStore';
 
 export default function ProductPage() {
   const params = useParams();
@@ -17,6 +18,37 @@ export default function ProductPage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [selectedSize, setSelectedSize] = React.useState<string | null>(null);
   const [selectedColor, setSelectedColor] = React.useState<string | null>(null);
+  
+  const { addItem } = useCartStore();
+
+  const handleAddToCart = () => {
+    if (!product || !selectedSize || !selectedColor) return;
+    
+    // Find the specific variant
+    const variant = product.variants.find((v: any) => 
+      v.sizeId === selectedSize && v.colorId === selectedColor
+    );
+    
+    if (!variant) {
+      alert('This combination is currently out of stock.');
+      return;
+    }
+
+    const primaryImage = product.images.find((img: any) => img.isPrimary)?.url || product.images[0]?.url;
+    
+    addItem({
+      id: variant.id, // Use variant ID as cart item ID so different sizes/colors stack separately
+      productId: product.id,
+      variantId: variant.id,
+      name: product.name,
+      slug: product.slug,
+      price: Number(variant.price),
+      quantity: 1,
+      image: primaryImage,
+      color: variant.color.name,
+      size: variant.size.name
+    });
+  };
 
   React.useEffect(() => {
     const fetchProduct = async () => {
@@ -193,7 +225,7 @@ export default function ProductPage() {
 
             {/* Actions */}
             <div className="mt-10 flex gap-4">
-              <Button size="lg" className="flex-1 text-base">
+              <Button size="lg" className="flex-1 text-base" onClick={handleAddToCart}>
                 <ShoppingBag className="mr-2 h-5 w-5" /> Add to Cart
               </Button>
               <Button size="icon" variant="outline" className="h-14 w-14 shrink-0 rounded-2xl">

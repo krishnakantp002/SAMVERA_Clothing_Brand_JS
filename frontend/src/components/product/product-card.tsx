@@ -9,10 +9,32 @@ import { ProductCardData } from '@/types';
 import { formatPrice, calcDiscount } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
+import { useWishlistStore } from '@/stores/wishlistStore';
+
 export function ProductCard({ product }: { product: ProductCardData }) {
   const discount = product.compareAtPrice 
     ? calcDiscount(product.basePrice, product.compareAtPrice) 
     : 0;
+
+  const { items, addItem, removeItem, hasItem } = useWishlistStore();
+  const isWishlisted = hasItem(product.id);
+
+  const toggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigating to product page
+    e.stopPropagation();
+    
+    if (isWishlisted) {
+      removeItem(product.id);
+    } else {
+      addItem({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: product.basePrice,
+        image: product.primaryImage || undefined
+      });
+    }
+  };
 
   return (
     <motion.div
@@ -50,11 +72,16 @@ export function ProductCard({ product }: { product: ProductCardData }) {
 
         {/* Quick Actions */}
         <div className="absolute inset-x-0 bottom-0 flex translate-y-full items-center gap-2 bg-gradient-to-t from-surface-950/90 to-transparent p-4 transition-transform duration-300 group-hover:translate-y-0">
-          <Button className="w-full text-xs" size="sm">
+          <Button className="w-full text-xs" size="sm" onClick={(e) => { e.preventDefault(); /* Would trigger quick add modal */ }}>
             <ShoppingBag className="mr-2 h-4 w-4" /> Add to Cart
           </Button>
-          <Button variant="glass" size="icon" className="shrink-0 rounded-xl">
-            <Heart className="h-4 w-4" />
+          <Button 
+            variant="glass" 
+            size="icon" 
+            className="shrink-0 rounded-xl"
+            onClick={toggleWishlist}
+          >
+            <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-error text-error' : ''}`} />
           </Button>
         </div>
       </Link>
