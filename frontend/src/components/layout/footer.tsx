@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Mail, Phone, MapPin, Instagram, Twitter, Facebook } from 'lucide-react';
+import { Mail, Phone, MapPin } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -15,17 +15,6 @@ export function Footer() {
             <p className="mt-4 text-sm leading-relaxed text-surface-400">
               Premium men's fashion and lifestyle essentials. Designed for the modern man who values quality, comfort, and style.
             </p>
-            <div className="mt-6 flex items-center gap-4">
-              <a href="#" className="text-surface-400 hover:text-brand-400 transition-colors">
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-surface-400 hover:text-brand-400 transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-surface-400 hover:text-brand-400 transition-colors">
-                <Facebook className="h-5 w-5" />
-              </a>
-            </div>
           </div>
 
           {/* Quick Links */}
