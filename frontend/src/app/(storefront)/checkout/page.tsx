@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
 
+import Script from 'next/script';
+
 interface CheckoutFormData {
   firstName: string;
   lastName: string;
@@ -23,10 +25,17 @@ interface CheckoutFormData {
   pincode: string;
 }
 
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, getCartTotal, clearCart } = useCartStore();
   const [isProcessing, setIsProcessing] = React.useState(false);
+  const [paymentMethod, setPaymentMethod] = React.useState<'CASH_ON_DELIVERY' | 'ONLINE'>('CASH_ON_DELIVERY');
 
   const subtotal = getCartTotal();
   const shipping = subtotal > 999 ? 0 : 99;
@@ -45,35 +54,94 @@ export default function CheckoutPage() {
     }
   });
 
-  // Redirect if cart is empty
   React.useEffect(() => {
     if (items.length === 0 && !isProcessing) {
       router.push('/shop');
     }
   }, [items.length, router, isProcessing]);
 
+  const handleRazorpayPayment = async (orderId: string, razorpayOrderId: string, amount: number) => {
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'mock_key',
+      amount: amount,
+      currency: 'INR',
+      name: 'SAMVERA',
+      description: 'Test Transaction',
+      order_id: razorpayOrderId,
+      handler: async function (response: any) {
+        try {
+          const verifyRes = await api.post('/payments/verify', {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            orderId: orderId
+          });
+          
+          if (verifyRes.data.success) {
+            clearCart();
+            router.push(`/account/orders/${orderId}`);
+          }
+        } catch (error) {
+          console.error('Verification failed', error);
+          alert('Payment verification failed. Please contact support.');
+          setIsProcessing(false);
+        }
+      },
+      prefill: {
+        name: 'SAMVERA Customer',
+        email: 'customer@samvera.com',
+        contact: '9999999999'
+      },
+      theme: {
+        color: '#D97706' // brand-500
+      },
+      modal: {
+        ondismiss: function() {
+          setIsProcessing(false);
+        }
+      }
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.on('payment.failed', function (response: any){
+      alert('Payment Failed: ' + response.error.description);
+      setIsProcessing(false);
+    });
+    rzp.open();
+  };
+
   const onSubmit = async (data: CheckoutFormData) => {
     try {
       setIsProcessing(true);
       
-      // In Phase 10 we will integrate Razorpay here.
-      // For now, we hit a mock checkout endpoint to create the order.
       const payload = {
         items: items.map(item => ({ variantId: item.variantId, quantity: item.quantity })),
         shippingAddress: data,
-        paymentMethod: 'CASH_ON_DELIVERY' // Default mock
+        paymentMethod
       };
 
       const response = await api.post('/checkout', payload);
       
       if (response.data.success) {
-        clearCart();
-        router.push(`/account/orders/${response.data.data.orderId}`);
+        const orderId = response.data.data.orderId;
+
+        if (paymentMethod === 'ONLINE') {
+          // Initialize Razorpay
+          const rpRes = await api.post('/payments/create-order', { orderId });
+          if (rpRes.data.success) {
+            handleRazorpayPayment(orderId, rpRes.data.data.id, rpRes.data.data.amount);
+          } else {
+            throw new Error('Failed to create Razorpay order');
+          }
+        } else {
+          // COD Flow
+          clearCart();
+          router.push(`/account/orders/${orderId}`);
+        }
       }
     } catch (error) {
       console.error('Checkout failed:', error);
       alert('Checkout failed. Please try again.');
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -82,6 +150,7 @@ export default function CheckoutPage() {
 
   return (
     <main className="min-h-screen bg-surface-950 pb-24 pt-32">
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
         <div className="mb-8 flex items-center justify-between border-b border-surface-800 pb-4">
@@ -125,18 +194,35 @@ export default function CheckoutPage() {
                 </div>
               </section>
 
-              {/* Payment Method Placeholder */}
+              {/* Payment Method */}
               <section className="space-y-4 rounded-3xl border border-surface-800 bg-surface-900/50 p-6 sm:p-8">
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-5 w-5 text-brand-400" />
                   <h2 className="text-lg font-semibold text-white">Payment Method</h2>
                 </div>
-                <div className="rounded-xl border border-brand-500 bg-brand-500/10 p-4">
-                  <label className="flex items-center gap-3">
-                    <input type="radio" checked readOnly className="h-4 w-4 text-brand-500 accent-brand-500 focus:ring-brand-500" />
-                    <span className="font-medium text-white">Cash on Delivery</span>
-                  </label>
-                  <p className="ml-7 mt-1 text-xs text-brand-200/70">Pay via cash or UPI upon delivery.</p>
+                
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div 
+                    onClick={() => setPaymentMethod('ONLINE')}
+                    className={`cursor-pointer rounded-xl border p-4 transition-all ${paymentMethod === 'ONLINE' ? 'border-brand-500 bg-brand-500/10' : 'border-surface-700 bg-surface-900 hover:border-surface-600'}`}
+                  >
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="radio" checked={paymentMethod === 'ONLINE'} onChange={() => setPaymentMethod('ONLINE')} className="h-4 w-4 text-brand-500 accent-brand-500" />
+                      <span className="font-medium text-white">Pay Online</span>
+                    </label>
+                    <p className="ml-7 mt-1 text-xs text-surface-400">UPI, Cards, Netbanking.</p>
+                  </div>
+                  
+                  <div 
+                    onClick={() => setPaymentMethod('CASH_ON_DELIVERY')}
+                    className={`cursor-pointer rounded-xl border p-4 transition-all ${paymentMethod === 'CASH_ON_DELIVERY' ? 'border-brand-500 bg-brand-500/10' : 'border-surface-700 bg-surface-900 hover:border-surface-600'}`}
+                  >
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="radio" checked={paymentMethod === 'CASH_ON_DELIVERY'} onChange={() => setPaymentMethod('CASH_ON_DELIVERY')} className="h-4 w-4 text-brand-500 accent-brand-500" />
+                      <span className="font-medium text-white">Cash on Delivery</span>
+                    </label>
+                    <p className="ml-7 mt-1 text-xs text-surface-400">Pay cash upon delivery.</p>
+                  </div>
                 </div>
               </section>
 

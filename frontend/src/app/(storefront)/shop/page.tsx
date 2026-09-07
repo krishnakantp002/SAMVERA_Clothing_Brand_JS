@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Filter, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -108,13 +109,24 @@ export default function ShopPage() {
                   <div>
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-white">Category</h3>
                     <div className="mt-4 space-y-3">
-                      {['T-Shirts', 'Oversized', 'Hoodies', 'Bottomwear'].map(cat => (
-                        <label key={cat} className="flex cursor-pointer items-center gap-3">
-                          <div className="flex h-5 w-5 items-center justify-center rounded border border-surface-700 bg-surface-900">
-                            {/* Checkbox mock */}
+                      {[
+                        { name: 'All Products', slug: '' },
+                        { name: 'T-Shirts', slug: 't-shirts' }, 
+                        { name: 'Oversized', slug: 'oversized-t-shirts' }, 
+                        { name: 'Hoodies', slug: 'hoodies' }
+                      ].map(cat => (
+                        <Link 
+                          href={cat.slug ? `/shop?category=${cat.slug}` : '/shop'} 
+                          key={cat.name} 
+                          className="flex cursor-pointer items-center gap-3"
+                        >
+                          <div className={`flex h-5 w-5 items-center justify-center rounded border ${category === cat.slug || (!category && !cat.slug) ? 'border-brand-500 bg-brand-500' : 'border-surface-700 bg-surface-900'}`}>
+                            {(category === cat.slug || (!category && !cat.slug)) && <div className="h-2 w-2 rounded-sm bg-white" />}
                           </div>
-                          <span className="text-sm text-surface-300 transition-colors hover:text-white">{cat}</span>
-                        </label>
+                          <span className={`text-sm transition-colors hover:text-white ${category === cat.slug || (!category && !cat.slug) ? 'text-white font-medium' : 'text-surface-300'}`}>
+                            {cat.name}
+                          </span>
+                        </Link>
                       ))}
                     </div>
                   </div>
