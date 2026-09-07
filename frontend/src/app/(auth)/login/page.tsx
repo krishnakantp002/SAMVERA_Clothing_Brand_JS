@@ -41,7 +41,11 @@ export default function LoginPage() {
       
       if (response.data.success) {
         login(response.data.data);
-        router.push(returnUrl);
+        if (response.data.data.roles?.includes('ADMIN')) {
+          router.push('/admin');
+        } else {
+          router.push(returnUrl);
+        }
       }
     } catch (error: any) {
       setServerError(

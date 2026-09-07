@@ -1,12 +1,35 @@
+'use client';
+
 import * as React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { PackageSearch, LayoutDashboard, ShoppingCart, Users, Settings } from 'lucide-react';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuthStore();
+
+  React.useEffect(() => {
+    if (!isAuthenticated || !user) {
+      router.push('/login');
+    } else if (!user.roles?.includes('ADMIN')) {
+      router.push('/account');
+    }
+  }, [isAuthenticated, user, router]);
+
+  if (!user || !user.roles?.includes('ADMIN')) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-surface-950">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-surface-800 border-t-brand-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-surface-950">
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 w-64 border-r border-surface-800 bg-surface-900/50 backdrop-blur-md">
+      <aside className="fixed inset-y-0 left-0 w-64 border-r border-surface-800 bg-surface-900/50 backdrop-blur-md z-50">
         <div className="flex h-16 items-center px-6">
           <Link href="/admin" className="font-display text-xl font-bold tracking-widest text-white">
             SAMVERA <span className="text-brand-400">ADMIN</span>

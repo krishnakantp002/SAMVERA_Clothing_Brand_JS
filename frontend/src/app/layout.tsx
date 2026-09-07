@@ -64,10 +64,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
       <body>
-        <Navbar />
-        <CartDrawer />
         {children}
-        <Footer />
       </body>
     </html>
   );
