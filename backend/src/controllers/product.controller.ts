@@ -144,3 +144,52 @@ export const getCategories = async (req: Request, res: Response): Promise<void> 
     res.status(500).json({ success: false, error: { message: 'Internal server error' } });
   }
 };
+export const createProduct = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { name, categoryId, basePrice, compareAtPrice, description, isNewArrival, isBestSeller, primaryImage } = req.body;
+    
+    // Auto-generate slug
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+    const product = await prisma.product.create({
+      data: {
+        name,
+        slug,
+        categoryId,
+        basePrice,
+        compareAtPrice,
+        description,
+        shortDescription: description.substring(0, 100),
+        isNewArrival: isNewArrival || false,
+        isBestSeller: isBestSeller || false,
+        status: 'ACTIVE',
+        metaKeywords: [],
+        images: {
+          create: primaryImage ? [{ url: primaryImage, altText: name, isPrimary: true, displayOrder: 1 }] : []
+        }
+      }
+    });
+    res.status(201).json({ success: true, data: product });
+  } catch (error) {
+    console.error('Create product error:', error);
+    res.status(500).json({ success: false, error: { message: 'Failed to create product' } });
+  }
+};
+
+export const deleteProduct = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    
+    // Instead of hard delete, we set status to ARCHIVED or delete if no relations exist
+    // For safety, let's just do a soft delete via status
+    await prisma.product.update({
+      where: { id },
+      data: { status: 'ARCHIVED' }
+    });
+    
+    res.status(200).json({ success: true, data: { message: 'Product archived successfully' } });
+  } catch (error) {
+    console.error('Delete product error:', error);
+    res.status(500).json({ success: false, error: { message: 'Failed to delete product' } });
+  }
+};
