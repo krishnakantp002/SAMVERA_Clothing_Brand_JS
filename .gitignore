@@ -40,3 +40,6 @@ next-env.d.ts
 # prisma
 *.db
 *.db-journal
+
+# runtime uploads
+backend/uploads/

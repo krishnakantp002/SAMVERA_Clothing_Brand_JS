@@ -16,6 +16,8 @@ import bannerRoutes from './routes/banner.routes';
 import uploadRoutes from './routes/upload.routes';
 import reviewRoutes from './routes/review.routes';
 import qaRoutes from './routes/qa.routes';
+import userRoutes from './routes/user.routes';
+import statsRoutes from './routes/stats.routes';
 
 dotenv.config();
 
@@ -48,6 +50,8 @@ app.use('/api/banners', bannerRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/qa', qaRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {

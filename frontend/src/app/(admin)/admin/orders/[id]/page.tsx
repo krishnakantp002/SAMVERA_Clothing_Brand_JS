@@ -193,7 +193,7 @@ export default function AdminOrderDetailsPage({ params }: { params: Promise<{ id
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-surface-500">Status</p>
                   <span className={`mt-1 inline-block rounded-full px-2 py-1 text-[10px] font-bold tracking-wider ${
-                    payment.status === 'COMPLETED' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
+                    payment.status === 'SUCCESS' ? 'bg-success/10 text-success' : payment.status === 'PENDING' ? 'bg-warning/10 text-warning' : 'bg-surface-800 text-surface-400'
                   }`}>
                     {payment.status}
                   </span>

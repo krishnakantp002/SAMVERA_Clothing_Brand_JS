@@ -12,6 +12,7 @@ export interface WishlistItem {
 interface WishlistState {
   items: WishlistItem[];
   addItem: (item: WishlistItem) => void;
+  updateItem: (id: string, patch: Partial<WishlistItem>) => void;
   removeItem: (id: string) => void;
   hasItem: (id: string) => boolean;
   clearWishlist: () => void;
@@ -31,6 +32,12 @@ export const useWishlistStore = create<WishlistState>()(
         });
       },
       
+      updateItem: (id, patch) => {
+        set((state) => ({
+          items: state.items.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+        }));
+      },
+
       removeItem: (id) => {
         set((state) => ({
           items: state.items.filter((item) => item.id !== id),

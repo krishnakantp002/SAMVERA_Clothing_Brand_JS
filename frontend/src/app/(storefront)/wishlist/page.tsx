@@ -3,18 +3,55 @@
 import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, Trash2, ShoppingBag } from 'lucide-react';
+import { Heart, Trash2 } from 'lucide-react';
 import { useWishlistStore } from '@/stores/wishlistStore';
 import { formatPrice } from '@/lib/utils';
+import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 
+const BROKEN_IMAGE = (image?: string) => !image || image.includes('placeholder');
+
 export default function WishlistPage() {
-  const { items, removeItem } = useWishlistStore();
+  const { items, removeItem, updateItem } = useWishlistStore();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Self-heal persisted items that have a missing/broken image
+  // (saved before product cards carried the real image URL)
+  React.useEffect(() => {
+    if (!mounted) return;
+    const stale = items.filter((item) => BROKEN_IMAGE(item.image));
+    if (stale.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      for (const item of stale) {
+        try {
+          const res = await api.get(`/products/${item.slug}`);
+          const product = res.data?.data;
+          const url =
+            product?.primaryImage ||
+            product?.images?.find((img: { isPrimary: boolean; url: string }) => img.isPrimary)?.url ||
+            product?.images?.[0]?.url;
+          if (!cancelled && url) {
+            updateItem(item.id, {
+              image: url,
+              price: Number(product?.basePrice ?? item.price),
+              name: product?.name ?? item.name,
+            });
+          }
+        } catch {
+          // product may have been deleted; leave the persisted data as is
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, items.length]);
 
   if (!mounted) return null;
 
@@ -45,20 +82,20 @@ export default function WishlistPage() {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {items.map((item) => (
               <div key={item.id} className="group relative flex flex-col border border-surface-200 bg-white">
-                <Link href={`/products/${item.slug}`} className="relative aspect-[3/4] w-full overflow-hidden bg-surface-100">
-                  {item.image ? (
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      fill
-                      className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-surface-100 text-surface-400">
-                      IMG
-                    </div>
-                  )}
-                </Link>
+                  <Link href={`/products/${item.slug}`} className="relative aspect-[3/4] w-full overflow-hidden bg-surface-100">
+                    {!BROKEN_IMAGE(item.image) ? (
+                      <Image
+                        src={item.image!}
+                        alt={item.name}
+                        fill
+                        className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-surface-100 text-4xl">
+                        👕
+                      </div>
+                    )}
+                  </Link>
                 
                 <div className="flex flex-1 flex-col p-4">
                   <h3 className="text-xs font-bold uppercase tracking-widest text-black line-clamp-1">

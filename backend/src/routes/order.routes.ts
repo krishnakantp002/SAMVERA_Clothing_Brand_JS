@@ -86,6 +86,16 @@ router.patch('/:id/status', authenticate, authorize(['ADMIN']), async (req, res)
       where: { id: req.params.id as string },
       data: { status }
     });
+
+    // When an order is delivered, settle any pending payment
+    // (e.g. Cash on Delivery collected at the door)
+    if (status === 'DELIVERED') {
+      await prisma.payment.updateMany({
+        where: { orderId: order.id, status: 'PENDING' },
+        data: { status: 'SUCCESS' }
+      });
+    }
+
     res.json({ success: true, data: order });
   } catch (error) {
     res.status(500).json({ success: false, error: { message: 'Failed to update order status' } });
