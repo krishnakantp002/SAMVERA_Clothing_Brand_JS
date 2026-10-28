@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { Search, Eye } from 'lucide-react';
 import { api } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
@@ -94,9 +95,12 @@ export default function AdminOrdersPage() {
                       {formatPrice(order.total)}
                     </td>
                     <td className="py-4 pr-6 pl-4 text-right">
-                      <button className="rounded-lg p-2 text-surface-400 hover:bg-surface-800 hover:text-white transition-colors">
+                      <Link 
+                        href={`/admin/orders/${order.id}`}
+                        className="inline-block rounded-lg p-2 text-surface-400 hover:bg-surface-800 hover:text-white transition-colors"
+                      >
                         <Eye className="h-4 w-4" />
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))

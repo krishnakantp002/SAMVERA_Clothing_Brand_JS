@@ -14,7 +14,7 @@ import { loginSchema, type LoginInput } from '@/lib/validation/schemas';
 import { useAuthStore } from '@/stores/authStore';
 import { api } from '@/lib/api';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl') || '/';
@@ -128,5 +128,13 @@ export default function LoginPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <React.Suspense fallback={<div className="flex min-h-[400px] items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-surface-200 border-t-black"></div></div>}>
+      <LoginForm />
+    </React.Suspense>
   );
 }

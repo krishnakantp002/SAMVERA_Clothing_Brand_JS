@@ -136,6 +136,7 @@ model User {
   inventoryActions   InventoryTransaction[] @relation("PerformedBy")
   statusChanges      OrderStatusHistory[]   @relation("ChangedBy")
   couponUsages       CouponUsage[]
+  questions          ProductQuestion[]
 
   @@index([email])
   @@index([isActive])
@@ -315,15 +316,16 @@ model Product {
   deletedAt        DateTime?
 
   // Relations
-  category    Category     @relation(fields: [categoryId], references: [id])
-  subcategory Subcategory? @relation(fields: [subcategoryId], references: [id])
-  brand       Brand?       @relation(fields: [brandId], references: [id])
-  variants    ProductVariant[]
-  images      ProductImage[]
-  reviews     Review[]
-  collections CollectionProduct[]
+  category      Category            @relation(fields: [categoryId], references: [id])
+  subcategory   Subcategory?        @relation(fields: [subcategoryId], references: [id])
+  brand         Brand?              @relation(fields: [brandId], references: [id])
+  variants      ProductVariant[]
+  images        ProductImage[]
+  reviews       Review[]
+  collections   CollectionProduct[]
   wishlistItems WishlistItem[]
-  orderItems  OrderItem[]
+  orderItems    OrderItem[]
+  questions     ProductQuestion[]
 
   @@index([slug])
   @@index([status])
@@ -456,6 +458,7 @@ model CartItem {
 
   @@unique([cartId, variantId])
   @@index([cartId])
+  @@index([variantId])
 }
 
 // ── Wishlist ───────────────────────────────
@@ -831,3 +834,23 @@ model AnalyticsEvent {
   @@index([userId])
   @@index([createdAt])
 }
+
+model ProductQuestion {
+  id        String   @id @default(cuid())
+  productId String
+  userId    String?
+  userName  String?
+  userEmail String?
+  question  String   @db.Text
+  answer    String?  @db.Text
+  status    String   @default("PENDING") // PENDING, ANSWERED, REJECTED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+  user    User?   @relation(fields: [userId], references: [id])
+
+  @@index([productId])
+  @@index([status])
+}
+

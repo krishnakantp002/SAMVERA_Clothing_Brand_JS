@@ -9,6 +9,10 @@ import { api } from '@/lib/api';
 import { formatPrice, calcDiscount } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/stores/cartStore';
+import { useWishlistStore } from '@/stores/wishlistStore';
+import { ProductReviews } from '@/components/product/product-reviews';
+
+import { ProductQA } from '@/components/product/product-qa';
 
 export default function ProductPage() {
   const params = useParams();
@@ -20,6 +24,15 @@ export default function ProductPage() {
   const [selectedColor, setSelectedColor] = React.useState<string | null>(null);
   
   const { addItem } = useCartStore();
+  const { hasItem: wishlistHasItem, addItem: addToWishlist, removeItem: removeFromWishlist } = useWishlistStore();
+  
+  const [mounted, setMounted] = React.useState(false);
+  
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isWishlisted = mounted && product ? wishlistHasItem(product.id) : false;
 
   const handleAddToCart = () => {
     if (!product || !selectedSize || !selectedColor) return;
@@ -228,8 +241,25 @@ export default function ProductPage() {
               <Button size="lg" className="flex-1 text-base" onClick={handleAddToCart}>
                 <ShoppingBag className="mr-2 h-5 w-5" /> Add to Cart
               </Button>
-              <Button size="icon" variant="outline" className="h-14 w-14 shrink-0 rounded-2xl">
-                <Heart className="h-6 w-6" />
+              <Button 
+                size="icon" 
+                variant="outline" 
+                className="h-14 w-14 shrink-0 rounded-2xl"
+                onClick={() => {
+                  if (isWishlisted) {
+                    removeFromWishlist(product.id);
+                  } else {
+                    addToWishlist({
+                      id: product.id,
+                      name: product.name,
+                      slug: product.slug,
+                      price: Number(product.basePrice),
+                      image: product.images?.find((img: any) => img.isPrimary)?.url || product.images?.[0]?.url
+                    });
+                  }
+                }}
+              >
+                <Heart className={`h-6 w-6 ${isWishlisted ? 'fill-black' : ''}`} />
               </Button>
             </div>
 
@@ -246,6 +276,12 @@ export default function ProductPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-12 pb-12">
+        <ProductReviews productId={product.id} />
+        <ProductQA productId={product.id} />
       </div>
     </main>
   );

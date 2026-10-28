@@ -17,17 +17,17 @@
   --color-brand-950: #321912;
 
   /* Neutral / Dark Theme */
-  --color-surface-50: #f7f7f7;
-  --color-surface-100: #e3e3e3;
-  --color-surface-200: #c8c8c8;
-  --color-surface-300: #a4a4a4;
-  --color-surface-400: #818181;
-  --color-surface-500: #666666;
-  --color-surface-600: #515151;
-  --color-surface-700: #434343;
-  --color-surface-800: #383838;
-  --color-surface-900: #1a1a1a;
-  --color-surface-950: #0d0d0d;
+  --color-surface-50: var(--theme-surface-50);
+  --color-surface-100: var(--theme-surface-100);
+  --color-surface-200: var(--theme-surface-200);
+  --color-surface-300: var(--theme-surface-300);
+  --color-surface-400: var(--theme-surface-400);
+  --color-surface-500: var(--theme-surface-500);
+  --color-surface-600: var(--theme-surface-600);
+  --color-surface-700: var(--theme-surface-700);
+  --color-surface-800: var(--theme-surface-800);
+  --color-surface-900: var(--theme-surface-900);
+  --color-surface-950: var(--theme-surface-950);
 
   /* Accent */
   --color-accent: #c8a97e;
@@ -48,17 +48,51 @@
   /* Animations */
   --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Theme Overrides for automatic Dark Mode inversion */
+  --color-white: var(--theme-white);
+  --color-black: var(--theme-black);
 }
 
 /* ── Base Styles ───────────────────────────── */
 
 @layer base {
-  * {
-    @apply border-surface-200;
+  :root {
+    --theme-white: #ffffff;
+    --theme-black: #000000;
+    
+    --theme-surface-50: #f7f7f7;
+    --theme-surface-100: #e3e3e3;
+    --theme-surface-200: #c8c8c8;
+    --theme-surface-300: #a4a4a4;
+    --theme-surface-400: #818181;
+    --theme-surface-500: #666666;
+    --theme-surface-600: #515151;
+    --theme-surface-700: #434343;
+    --theme-surface-800: #383838;
+    --theme-surface-900: #1a1a1a;
+    --theme-surface-950: #0d0d0d;
+  }
+
+  .dark {
+    --theme-white: #0a0a0a;
+    --theme-black: #ffffff;
+    
+    --theme-surface-50: #121212;
+    --theme-surface-100: #1a1a1a;
+    --theme-surface-200: #2a2a2a;
+    --theme-surface-300: #404040;
+    --theme-surface-400: #525252;
+    --theme-surface-500: #737373;
+    --theme-surface-600: #8c8c8c;
+    --theme-surface-700: #a3a3a3;
+    --theme-surface-800: #d4d4d4;
+    --theme-surface-900: #e5e5e5;
+    --theme-surface-950: #f5f5f5;
   }
 
   body {
-    @apply bg-surface-950 text-surface-100 font-sans antialiased;
+    @apply bg-white text-black font-sans antialiased;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -104,10 +138,10 @@
   }
 
   .glass {
-    @apply bg-surface-900/80 backdrop-blur-xl border border-surface-800/50;
+    @apply bg-white/80 backdrop-blur-xl border border-surface-200/50;
   }
 
   .glass-light {
-    @apply bg-white/5 backdrop-blur-lg border border-white/10;
+    @apply bg-white/50 backdrop-blur-lg border border-surface-200;
   }
 }

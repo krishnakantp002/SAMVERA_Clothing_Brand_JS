@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getProducts, getProductBySlug, getCategories, createProduct, deleteProduct } from '../controllers/product.controller';
+import { getProducts, getProductBySlug, getCategories, updateCategory, createProduct, deleteProduct } from '../controllers/product.controller';
 import { authenticate, authorize } from '../middleware/auth';
 
 const router = Router();
@@ -7,6 +7,7 @@ const router = Router();
 // Public routes
 router.get('/', getProducts);
 router.get('/categories', getCategories);
+router.patch('/categories/:id', authenticate, authorize(['ADMIN']), updateCategory);
 router.get('/:slug', getProductBySlug);
 
 // Admin routes

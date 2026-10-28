@@ -1,121 +1,143 @@
 'use client';
 
-import * as React from 'react';
 import Link from 'next/link';
-import { Star, ShoppingBag, Heart } from 'lucide-react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
-
-import { ProductCardData } from '@/types';
-import { formatPrice, calcDiscount } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-
+import { Star, Heart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Product } from '@/types';
+import { formatPrice } from '@/lib/utils';
 import { useWishlistStore } from '@/stores/wishlistStore';
+import * as React from 'react';
 
-export function ProductCard({ product }: { product: ProductCardData }) {
-  const discount = product.compareAtPrice 
-    ? calcDiscount(product.basePrice, product.compareAtPrice) 
+export function ProductCard({ product }: { product: Product }) {
+  const router = useRouter();
+  const { hasItem, addItem, removeItem } = useWishlistStore();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isWishlisted = mounted ? hasItem(product.id) : false;
+
+  // Helper to get the primary image or a fallback
+  const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
+  const imageUrl = primaryImage?.url || '/images/placeholder.webp';
+
+  const discount = product.compareAtPrice && product.compareAtPrice > product.basePrice
+    ? Math.round(((Number(product.compareAtPrice) - Number(product.basePrice)) / Number(product.compareAtPrice)) * 100)
     : 0;
-
-  const { items, addItem, removeItem, hasItem } = useWishlistStore();
-  const isWishlisted = hasItem(product.id);
-
-  const toggleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigating to product page
-    e.stopPropagation();
-    
-    if (isWishlisted) {
-      removeItem(product.id);
-    } else {
-      addItem({
-        id: product.id,
-        name: product.name,
-        slug: product.slug,
-        price: product.basePrice,
-        image: product.primaryImage || undefined
-      });
-    }
-  };
 
   return (
     <motion.div
-      whileHover={{ y: -5 }}
-      className="group relative flex cursor-pointer flex-col"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="group relative flex flex-col"
     >
-      {/* Image Container */}
-      <Link href={`/products/${product.slug}`} className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-surface-900">
-        {product.primaryImage ? (
-          <img
-            src={product.primaryImage}
-            alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            loading="lazy"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-surface-800 to-surface-900 text-6xl opacity-20">
-            👕
+      <Link href={`/products/${product.slug}`} className="relative aspect-[3/4] w-full overflow-hidden bg-surface-100">
+        {imageUrl.includes('placeholder') ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-surface-100">
+            <span className="text-4xl">👕</span>
           </div>
+        ) : (
+          <Image
+            src={imageUrl}
+            alt={primaryImage?.altText || product.name}
+            fill
+            className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+          />
         )}
         
         {/* Badges */}
-        <div className="absolute left-3 top-3 flex flex-col gap-2">
+        <div className="absolute left-2 top-2 flex flex-col gap-2">
           {discount > 0 && (
-            <span className="rounded-full bg-error px-2.5 py-1 text-xs font-bold text-white shadow-lg">
+            <span className="bg-red-600 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
               {discount}% OFF
             </span>
           )}
           {product.isNewArrival && (
-            <span className="rounded-full bg-brand-500 px-2.5 py-1 text-xs font-bold text-white shadow-lg">
-              NEW
+            <span className="bg-black px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+              New
             </span>
           )}
         </div>
 
-        {/* Quick Actions */}
-        <div className="absolute inset-x-0 bottom-0 flex translate-y-full items-center gap-2 bg-gradient-to-t from-surface-950/90 to-transparent p-4 transition-transform duration-300 group-hover:translate-y-0">
-          <Button className="w-full text-xs" size="sm" onClick={(e) => { e.preventDefault(); /* Would trigger quick add modal */ }}>
-            <ShoppingBag className="mr-2 h-4 w-4" /> Add to Cart
-          </Button>
-          <Button 
-            variant="glass" 
-            size="icon" 
-            className="shrink-0 rounded-xl"
-            onClick={toggleWishlist}
+        {/* Wishlist Button */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isWishlisted) {
+              removeItem(product.id);
+            } else {
+              addItem({
+                id: product.id,
+                name: product.name,
+                slug: product.slug,
+                price: Number(product.basePrice),
+                image: imageUrl
+              });
+            }
+          }}
+          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-black shadow-md transition-transform hover:scale-110"
+        >
+          <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-black' : ''}`} />
+        </button>
+
+        {/* Quick Add Overlay */}
+        <div className="absolute inset-x-0 bottom-0 translate-y-full p-2 transition-transform duration-300 group-hover:translate-y-0 sm:p-4">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              router.push(`/products/${product.slug}`);
+            }}
+            className="w-full bg-white py-3 text-xs font-bold uppercase tracking-widest text-black shadow-lg transition-colors hover:bg-black hover:text-white"
           >
-            <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-error text-error' : ''}`} />
-          </Button>
+            Quick Add
+          </button>
         </div>
       </Link>
 
-      {/* Info */}
-      <div className="mt-4 flex flex-1 flex-col space-y-1">
-        <Link href={`/category/${product.category.slug}`} className="text-xs font-medium uppercase tracking-wider text-brand-400 hover:text-brand-300">
-          {product.category.name}
-        </Link>
-        <Link href={`/products/${product.slug}`}>
-          <h3 className="line-clamp-1 text-sm font-medium text-surface-200 transition-colors group-hover:text-white">
-            {product.name}
-          </h3>
+      <div className="mt-4 flex flex-col gap-1 px-1">
+        {product.category && (
+          <Link href={`/shop?category=${product.category.slug}`} className="text-[10px] font-bold uppercase tracking-widest text-surface-500 hover:text-black">
+            {product.category.name}
+          </Link>
+        )}
+        
+        <Link href={`/products/${product.slug}`} className="text-sm font-semibold leading-tight text-black line-clamp-1 hover:underline">
+          {product.name}
         </Link>
         
-        <div className="mt-1 flex items-center justify-between">
-          <div className="flex items-baseline gap-2">
-            <span className="text-base font-bold text-white">
-              {formatPrice(product.basePrice)}
+        <div className="flex items-center gap-2 mt-1">
+          <span className="text-sm font-bold text-black">{formatPrice(Number(product.basePrice))}</span>
+          {product.compareAtPrice && (
+            <span className="text-xs text-surface-500 line-through">
+              {formatPrice(Number(product.compareAtPrice))}
             </span>
-            {product.compareAtPrice && (
-              <span className="text-xs text-surface-500 line-through">
-                {formatPrice(product.compareAtPrice)}
-              </span>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-1">
-            <Star className="h-3 w-3 fill-brand-400 text-brand-400" />
-            <span className="text-xs font-medium text-surface-400">
-              {product.rating} <span className="text-surface-600">({product.reviewCount})</span>
-            </span>
-          </div>
+          )}
         </div>
+
+        {/* Reviews */}
+        {product.rating !== undefined && product.reviewCount !== undefined && product.reviewCount > 0 && (
+          <div className="flex items-center gap-1 mt-1">
+            <div className="flex">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-3 w-3 ${
+                    i < Math.floor(product.rating!)
+                      ? 'fill-black text-black'
+                      : 'fill-surface-200 text-surface-200'
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-[10px] font-medium text-surface-500">({product.reviewCount})</span>
+          </div>
+        )}
       </div>
     </motion.div>
   );

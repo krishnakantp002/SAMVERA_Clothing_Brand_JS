@@ -1,102 +1,72 @@
 # SAMVERA
 
-> Premium Men's Fashion & Lifestyle Essentials — E-Commerce Platform
+E-commerce platform for premium men's fashion & lifestyle essentials.
+
+## Features
+
+**Storefront (customer-facing)**
+- Product catalog with categories, brands, variants, and search/filtering
+- Product reviews and customer Q&A
+- Cart, wishlist, and smooth checkout flow
+- User accounts with order history and saved addresses
+- Light/dark mode
+
+**Admin dashboard**
+- Product, order, inventory, and coupon management
+- Customer management
+- Q&A moderation
+- Banner management and store settings
+
+**Backend (REST API)**
+- JWT auth with HTTP-only cookies
+- Razorpay payment integration
+- Image uploads (Cloudinary + local static serving)
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 14+ (App Router) |
-| Language | TypeScript (Strict) |
-| Styling | Tailwind CSS v4 |
-| Animation | Framer Motion |
-| State | Zustand |
-| Forms | React Hook Form + Zod |
-| Database | PostgreSQL |
-| ORM | Prisma 5 |
-| Payments | Razorpay |
-| Auth | Custom JWT + HTTP-only Cookies |
+| Layer     | Technology                          |
+|-----------|-------------------------------------|
+| Frontend  | Next.js (App Router), React 19, TypeScript |
+| Styling   | Tailwind CSS v4, Framer Motion       |
+| State     | Zustand                              |
+| Forms     | React Hook Form + Zod                |
+| Backend   | Node.js, Express, TypeScript         |
+| Database  | Prisma ORM                           |
+| Payments  | Razorpay                             |
+| Uploads   | Multer + Cloudinary                  |
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 18+
-- PostgreSQL 16+
-- npm
-
-### Setup
-
 ```bash
-# 1. Clone and install
-git clone <repo-url>
-cd samvera
+# 1. Clone and install (npm workspaces monorepo)
 npm install
 
-# 2. Set up environment
-cp .env.example .env.local
-# Edit .env.local with your database URL and other secrets
+# 2. Configure environment
+#    backend/.env  and  frontend/.env.local with DATABASE_URL and secrets
 
-# 3. Generate Prisma client
-npx prisma generate
-
-# 4. Set up database
-npx prisma migrate dev
-
-# 5. Seed development data
+# 3. Set up the database (from backend/)
+npm run db:generate
+npm run db:migrate
 npm run db:seed
 
-# 6. Start development server
+# 4. Run both apps in dev mode
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000)
+- Storefront: http://localhost:3000
+- API: http://localhost:5000
 
 ## Project Structure
 
 ```
-src/
-├── app/                    # Next.js App Router pages
-│   ├── (storefront)/       # Customer-facing pages
-│   ├── (auth)/             # Authentication pages
-│   ├── admin/              # Admin dashboard
-│   └── api/                # API routes
-├── components/             # React components
-│   ├── ui/                 # Design system primitives
-│   ├── layout/             # Navbar, Footer, Sidebar
-│   ├── product/            # Product components
-│   └── ...
-├── lib/                    # Core libraries
-│   ├── db/                 # Prisma client
-│   ├── validation/         # Zod schemas
-│   └── utils/              # Utility functions
-├── services/               # Business logic layer
-├── repositories/           # Data access layer
-├── types/                  # TypeScript definitions
-├── hooks/                  # Custom React hooks
-├── stores/                 # Zustand stores
-└── config/                 # Configuration
+backend/        Express API (controllers, routes, services, prisma)
+frontend/       Next.js app
+  src/app/(storefront)/   Customer-facing pages
+  src/app/(admin)/        Admin dashboard
+  src/app/(auth)/         Authentication pages
+  src/components/         UI, layout, product components
+  src/types/              Shared TypeScript types
 ```
-
-## Available Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run lint` | Run ESLint |
-| `npm run type-check` | Run TypeScript type checking |
-| `npm run db:generate` | Generate Prisma client |
-| `npm run db:migrate` | Run database migrations |
-| `npm run db:seed` | Seed development data |
-| `npm run db:studio` | Open Prisma Studio |
-
-## Documentation
-
-- [Product Requirements](./docs/PRD.md)
-- [System Architecture](./docs/ARCHITECTURE.md)
-- [Database Design](./docs/DATABASE.md)
-- [API Design](./docs/API.md)
 
 ## License
 

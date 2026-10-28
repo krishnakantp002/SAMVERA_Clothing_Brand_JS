@@ -24,6 +24,13 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
       where.category = { slug: String(query.category) };
     }
     
+    if (query.q) {
+      where.OR = [
+        { name: { contains: String(query.q) } },
+        { description: { contains: String(query.q) } }
+      ];
+    }
+    
     if (query.filter === 'new-arrivals') {
       where.isNewArrival = true;
     }
@@ -142,6 +149,22 @@ export const getCategories = async (req: Request, res: Response): Promise<void> 
     res.status(200).json({ success: true, data: categories });
   } catch (error) {
     res.status(500).json({ success: false, error: { message: 'Internal server error' } });
+  }
+};
+
+export const updateCategory = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = req.params.id as string;
+    const { image } = req.body;
+    
+    const category = await prisma.category.update({
+      where: { id },
+      data: { image }
+    });
+    
+    res.status(200).json({ success: true, data: category });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: 'Failed to update category' } });
   }
 };
 export const createProduct = async (req: Request, res: Response): Promise<void> => {

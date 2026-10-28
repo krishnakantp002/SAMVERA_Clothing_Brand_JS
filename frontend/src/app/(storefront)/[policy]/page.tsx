@@ -24,19 +24,22 @@ const POLICIES: Record<string, { title: string; content: string }> = {
   }
 };
 
-export default function PolicyPage({ params }: { params: { policy: string } }) {
-  const data = POLICIES[params.policy.toLowerCase()];
+export default async function PolicyPage({ params }: { params: Promise<{ policy: string }> }) {
+  const resolvedParams = await params;
+  const data = POLICIES[resolvedParams.policy.toLowerCase()];
 
   if (!data) {
     notFound();
   }
 
   return (
-    <main className="min-h-screen bg-surface-950 pb-24 pt-32">
+    <main className="min-h-screen bg-white pb-24 pt-16 border-t border-surface-200">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        <h1 className="mb-8 font-display text-4xl font-bold text-white">{data.title}</h1>
-        <div className="rounded-3xl border border-surface-800 bg-surface-900/50 p-8 shadow-xl">
-          <p className="text-lg leading-relaxed text-surface-300">
+        <h1 className="mb-12 font-display text-3xl font-black uppercase tracking-tight text-black md:text-5xl">
+          {data.title}
+        </h1>
+        <div className="space-y-6">
+          <p className="text-sm font-medium leading-relaxed tracking-wide text-surface-600 sm:text-base">
             {data.content}
           </p>
         </div>

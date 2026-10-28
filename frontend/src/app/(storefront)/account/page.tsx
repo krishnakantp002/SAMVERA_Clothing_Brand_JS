@@ -11,72 +11,83 @@ import { Button } from '@/components/ui/button';
 export default function AccountPage() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuthStore();
+  const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  React.useEffect(() => {
+    if (!mounted) return;
     if (!isAuthenticated && !user) {
       router.push('/login');
     }
-  }, [isAuthenticated, user, router]);
+  }, [mounted, isAuthenticated, user, router]);
 
-  if (!user) return null;
+  if (!mounted || !user) return (
+    <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-surface-200 border-t-black"></div>
+    </div>
+  );
 
   return (
-    <main className="min-h-screen bg-surface-950 pb-24 pt-32">
+    <main className="min-h-screen bg-white pb-24 pt-16 border-t border-surface-200">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-surface-200 pb-4">
           <div>
-            <h1 className="font-display text-3xl font-bold text-white">My Account</h1>
-            <p className="mt-1 text-surface-400">Welcome back, {user.firstName}!</p>
+            <h1 className="font-display text-3xl font-black uppercase tracking-tight text-black md:text-5xl">My Account</h1>
+            <p className="mt-2 text-xs font-bold uppercase tracking-widest text-surface-500">Welcome back, {user.firstName}!</p>
           </div>
-          <Button variant="outline" onClick={() => logout()}>
-            <LogOut className="mr-2 h-4 w-4" /> Sign Out
-          </Button>
+          <button 
+            onClick={() => logout()}
+            className="flex items-center gap-2 border border-black px-6 py-3 text-xs font-bold uppercase tracking-widest text-black hover:bg-black hover:text-white transition-colors"
+          >
+            <LogOut className="h-4 w-4" /> Sign Out
+          </button>
         </div>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
           
           {/* Sidebar Menu */}
           <div className="lg:col-span-1">
-            <nav className="flex flex-col space-y-2 rounded-3xl border border-surface-800 bg-surface-900/50 p-4">
-              <Link href="/account" className="flex items-center gap-3 rounded-xl bg-brand-500/10 px-4 py-3 text-sm font-medium text-brand-400">
-                <User className="h-5 w-5" /> Profile
+            <nav className="flex flex-col space-y-4">
+              <Link href="/account" className="flex items-center gap-3 border border-black bg-black px-4 py-3 text-xs font-bold uppercase tracking-widest text-white">
+                <User className="h-4 w-4" /> Profile
               </Link>
-              <Link href="/account/orders" className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-surface-400 hover:bg-surface-800 hover:text-white transition-colors">
-                <Package className="h-5 w-5" /> My Orders
+              <Link href="/account/orders" className="flex items-center gap-3 border border-surface-200 px-4 py-3 text-xs font-bold uppercase tracking-widest text-surface-500 hover:border-black hover:text-black transition-colors">
+                <Package className="h-4 w-4" /> My Orders
               </Link>
-              <Link href="/account/addresses" className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-surface-400 hover:bg-surface-800 hover:text-white transition-colors">
-                <MapPin className="h-5 w-5" /> Saved Addresses
+              <Link href="/account/addresses" className="flex items-center gap-3 border border-surface-200 px-4 py-3 text-xs font-bold uppercase tracking-widest text-surface-500 hover:border-black hover:text-black transition-colors">
+                <MapPin className="h-4 w-4" /> Saved Addresses
               </Link>
             </nav>
           </div>
 
           {/* Profile Details */}
           <div className="lg:col-span-3">
-            <div className="rounded-3xl border border-surface-800 bg-surface-900/50 p-6 sm:p-8">
-              <h2 className="mb-6 text-xl font-bold text-white">Personal Information</h2>
+            <div className="border border-surface-200 p-6 sm:p-8">
+              <h2 className="mb-8 text-xl font-black uppercase tracking-wider text-black">Personal Information</h2>
               
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <label className="text-xs font-medium uppercase tracking-wider text-surface-500">First Name</label>
-                  <p className="mt-1 font-medium text-white">{user.firstName}</p>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-surface-400">First Name</label>
+                  <p className="mt-2 font-bold uppercase tracking-wide text-black">{user.firstName}</p>
                 </div>
                 <div>
-                  <label className="text-xs font-medium uppercase tracking-wider text-surface-500">Last Name</label>
-                  <p className="mt-1 font-medium text-white">{user.lastName}</p>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-surface-400">Last Name</label>
+                  <p className="mt-2 font-bold uppercase tracking-wide text-black">{user.lastName}</p>
                 </div>
                 <div>
-                  <label className="text-xs font-medium uppercase tracking-wider text-surface-500">Email Address</label>
-                  <p className="mt-1 font-medium text-white">{user.email}</p>
-                </div>
-                <div>
-                  <label className="text-xs font-medium uppercase tracking-wider text-surface-500">Account Role</label>
-                  <p className="mt-1 font-medium text-white capitalize">{user.roles?.join(', ')}</p>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-surface-400">Email Address</label>
+                  <p className="mt-2 font-bold uppercase tracking-wide text-black">{user.email}</p>
                 </div>
               </div>
 
-              <div className="mt-8 border-t border-surface-800 pt-8">
-                <Button variant="outline">Edit Profile</Button>
+              <div className="mt-12 border-t border-surface-200 pt-8">
+                <button className="border border-surface-200 px-6 py-3 text-xs font-bold uppercase tracking-widest text-black hover:border-black transition-colors">
+                  Edit Profile
+                </button>
               </div>
             </div>
           </div>

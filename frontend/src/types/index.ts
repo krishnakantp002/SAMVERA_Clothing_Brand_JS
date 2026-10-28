@@ -44,33 +44,99 @@ export type {
 // ── Extended Types (with relations) ─────────
 
 import type {
-  Product as PrismaProduct,
-  ProductVariant as PrismaProductVariant,
-  ProductImage as PrismaProductImage,
-  Size as PrismaSize,
-  Color as PrismaColor,
-  Category as PrismaCategory,
-  Subcategory as PrismaSubcategory,
-  Brand as PrismaBrand,
-  Inventory as PrismaInventory,
-  Review as PrismaReview,
-  Order as PrismaOrder,
-  OrderItem as PrismaOrderItem,
-  OrderAddress as PrismaOrderAddress,
-  Payment as PrismaPayment,
-  User as PrismaUser,
-} from '@prisma/client';
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  roles?: string[];
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+}
+
+export interface ProductImage {
+  id: string;
+  url: string;
+  altText?: string | null;
+  isPrimary: boolean;
+}
+
+export interface ProductVariant {
+  id: string;
+  sku: string;
+  price: number | string;
+  compareAtPrice?: number | string | null;
+  sizeId: string;
+  colorId: string;
+  size?: { id: string; name: string };
+  color?: { id: string; name: string; hexCode: string };
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  basePrice: number | string;
+  compareAtPrice?: number | string | null;
+  categoryId: string;
+  category?: Category;
+  images?: ProductImage[];
+  variants?: ProductVariant[];
+  rating?: number;
+  reviewCount?: number;
+  isNewArrival?: boolean;
+  isBestSeller?: boolean;
+}
+
+export interface Address {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2?: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+}
+
+export interface OrderItem {
+  id: string;
+  productId: string;
+  variantId: string;
+  productName: string;
+  variantName: string;
+  price: number | string;
+  quantity: number;
+  imageUrl?: string | null;
+}
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  status: string;
+  total: number | string;
+  createdAt: Date | string;
+  items?: OrderItem[];
+  payment?: { status: string; method: string };
+}
 
 /**
  * Product with all relations for detail page
  */
-export interface ProductWithDetails extends PrismaProduct {
-  category: PrismaCategory;
-  subcategory: PrismaSubcategory | null;
-  brand: PrismaBrand | null;
-  images: PrismaProductImage[];
+export interface ProductWithDetails extends Product {
+  subcategory: any | null;
+  brand: any | null;
+  images: ProductImage[];
   variants: VariantWithDetails[];
-  reviews: PrismaReview[];
+  reviews: any[];
   _count?: {
     reviews: number;
   };
@@ -79,10 +145,8 @@ export interface ProductWithDetails extends PrismaProduct {
 /**
  * Product variant with size, color, and inventory
  */
-export interface VariantWithDetails extends PrismaProductVariant {
-  size: PrismaSize;
-  color: PrismaColor;
-  inventory: PrismaInventory | null;
+export interface VariantWithDetails extends ProductVariant {
+  inventory: any | null;
 }
 
 /**
@@ -151,11 +215,25 @@ export interface CartSummary {
 /**
  * Order with full details
  */
-export interface OrderWithDetails extends PrismaOrder {
-  items: PrismaOrderItem[];
-  addresses: PrismaOrderAddress[];
-  payment: PrismaPayment | null;
-  user: Pick<PrismaUser, 'id' | 'firstName' | 'lastName' | 'email'>;
+export interface OrderWithDetails extends Order {
+  user: Pick<User, 'id' | 'firstName' | 'lastName' | 'email'>;
+  items: OrderItem[];
+  addresses: Address[];
+  statusHistory: any[];
+  payment: any | null;
+  shipments: any[];
+}
+
+export interface CartItemData {
+  id: string; // matches variantId
+  productId: string;
+  variantId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string;
+  size?: string;
+  color?: string;
 }
 
 /**
