@@ -5,7 +5,14 @@ import { useTheme } from 'next-themes';
 import { Moon, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export function ThemeToggle() {
+const _shape = 'relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border transition-colors';
+
+const _variants = {
+  default: 'border-surface-200 text-black hover:bg-surface-100',
+  admin: 'border-surface-700 text-white hover:bg-surface-800',
+} as const;
+
+export function ThemeToggle({ variant = 'default' }: { variant?: keyof typeof _variants }) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
@@ -15,7 +22,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <button className="flex h-9 w-9 items-center justify-center rounded-full border border-surface-200 text-surface-400">
+      <button className={`${_shape} ${_variants[variant]}`}>
         <span className="sr-only">Toggle theme</span>
       </button>
     );
@@ -24,7 +31,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-surface-200 text-black transition-colors hover:bg-surface-100"
+      className={`${_shape} ${_variants[variant]}`}
       aria-label="Toggle theme"
     >
       <div className="relative flex h-full w-full items-center justify-center">

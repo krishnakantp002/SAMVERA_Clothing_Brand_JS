@@ -2,13 +2,15 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { PackageSearch, LayoutDashboard, ShoppingCart, Users, Settings, LogOut, LayoutTemplate, HelpCircle } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { api } from '@/lib/api';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuthStore();
   const [mounted, setMounted] = React.useState(false);
 
@@ -54,27 +56,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         
         <nav className="mt-8 space-y-2 px-4 flex-1">
-          <Link href="/admin" className="flex items-center gap-3 rounded-lg bg-brand-500/10 px-4 py-3 text-sm font-medium text-brand-400">
-            <LayoutDashboard className="h-5 w-5" /> Dashboard
-          </Link>
-          <Link href="/admin/products" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-surface-400 hover:bg-surface-800 hover:text-white transition-colors">
-            <PackageSearch className="h-5 w-5" /> Products
-          </Link>
-          <Link href="/admin/orders" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-surface-400 hover:bg-surface-800 hover:text-white transition-colors">
-            <ShoppingCart className="h-5 w-5" /> Orders
-          </Link>
-          <Link href="/admin/customers" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-surface-400 hover:bg-surface-800 hover:text-white transition-colors">
-            <Users className="h-5 w-5" /> Customers
-          </Link>
-          <Link href="/admin/storefront" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-surface-400 hover:bg-surface-800 hover:text-white transition-colors">
-            <LayoutTemplate className="h-5 w-5" /> Storefront
-          </Link>
-          <Link href="/admin/qa" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-surface-400 hover:bg-surface-800 hover:text-white transition-colors">
-            <HelpCircle className="h-5 w-5" /> Q & A
-          </Link>
-          <Link href="/admin/settings" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-surface-400 hover:bg-surface-800 hover:text-white transition-colors">
-            <Settings className="h-5 w-5" /> Settings
-          </Link>
+          {[
+            { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+            { href: '/admin/products', label: 'Products', icon: PackageSearch, exact: false },
+            { href: '/admin/orders', label: 'Orders', icon: ShoppingCart, exact: false },
+            { href: '/admin/customers', label: 'Customers', icon: Users, exact: false },
+            { href: '/admin/storefront', label: 'Storefront', icon: LayoutTemplate, exact: false },
+            { href: '/admin/qa', label: 'Q & A', icon: HelpCircle, exact: false },
+            { href: '/admin/settings', label: 'Settings', icon: Settings, exact: false },
+          ].map(({ href, label, icon: Icon, exact }) => {
+            const isActive = exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-brand-500/10 text-brand-400'
+                    : 'text-surface-400 hover:bg-surface-800 hover:text-white'
+                }`}
+              >
+                <Icon className="h-5 w-5" /> {label}
+              </Link>
+            );
+          })}
         </nav>
         
         <div className="p-4 shrink-0 border-t border-surface-800">
@@ -89,6 +94,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main Content */}
       <main className="ml-64 flex-1">
+        <div className="sticky top-0 z-40 flex h-16 items-center justify-end border-b border-surface-800 bg-surface-950/80 px-6 backdrop-blur-md">
+          <ThemeToggle variant="admin" />
+        </div>
         {children}
       </main>
     </div>
