@@ -5,27 +5,21 @@
 export * from './api';
 
 // Re-export Prisma types for convenience
+// (User, Address, Category, Product, ProductVariant, ProductImage, Order and OrderItem
+// are defined locally below and take precedence)
 export type {
-  User,
   Role,
   Permission,
-  Address,
-  Category,
   Subcategory,
   Brand,
   Size,
   Color,
-  Product,
-  ProductVariant,
-  ProductImage,
   Inventory,
   InventoryTransaction,
   Cart,
   CartItem,
   Wishlist,
   WishlistItem,
-  Order,
-  OrderItem,
   OrderAddress,
   OrderStatusHistory,
   Payment,
@@ -43,12 +37,12 @@ export type {
 
 // ── Extended Types (with relations) ─────────
 
-import type {
 export interface User {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
+  phone?: string;
   roles?: string[];
 }
 
@@ -86,6 +80,7 @@ export interface Product {
   compareAtPrice?: number | string | null;
   categoryId: string;
   category?: Category;
+  primaryImage?: string | null;
   images?: ProductImage[];
   variants?: ProductVariant[];
   rating?: number;
@@ -193,8 +188,8 @@ export interface CartItemWithDetails {
     price: number;
     compareAtPrice: number | null;
     isActive: boolean;
-    size: PrismaSize;
-    color: PrismaColor;
+    size: { id: string; name: string };
+    color: { id: string; name: string; hexCode: string };
     product: {
       id: string;
       name: string;

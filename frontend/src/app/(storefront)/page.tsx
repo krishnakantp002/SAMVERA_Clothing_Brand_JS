@@ -201,13 +201,13 @@ export default function HomePage() {
     async function fetchData() {
       try {
         const [newRes, bestRes, bannerRes, catRes] = await Promise.all([
-          api.get('/products?filter=new-arrivals&limit=4').catch(() => ({ data: { data: { products: [] } } })),
-          api.get('/products?filter=best-sellers&limit=4').catch(() => ({ data: { data: { products: [] } } })),
+          api.get('/products?filter=new-arrivals&limit=4').catch(() => ({ data: { data: [] } })),
+          api.get('/products?filter=best-sellers&limit=4').catch(() => ({ data: { data: [] } })),
           api.get('/banners').catch(() => ({ data: { data: [] } })),
           api.get('/products/categories').catch(() => ({ data: { data: [] } }))
         ]);
-        setNewArrivals(newRes.data?.data?.products || []);
-        setBestSellers(bestRes.data?.data?.products || []);
+        setNewArrivals(newRes.data?.data || []);
+        setBestSellers(bestRes.data?.data || []);
         setCategories(catRes.data?.data || []);
         
         const banners = bannerRes.data?.data || [];

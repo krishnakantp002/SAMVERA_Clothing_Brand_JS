@@ -174,7 +174,7 @@ export const createProductSchema = z.object({
   slug: z.string().min(2).max(200).optional(),
   shortDescription: z.string().max(300).optional(),
   description: z.string().min(10, 'Description is required'),
-  specifications: z.record(z.string()).optional(),
+  specifications: z.record(z.string(), z.string()).optional(),
   material: z.string().max(200).optional(),
   fit: z.string().max(100).optional(),
   careInstructions: z.string().max(500).optional(),

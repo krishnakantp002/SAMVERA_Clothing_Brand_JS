@@ -22,8 +22,10 @@ export function ProductCard({ product }: { product: Product }) {
   const isWishlisted = mounted ? hasItem(product.id) : false;
 
   // Helper to get the primary image or a fallback
-  const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
-  const imageUrl = primaryImage?.url || '/images/placeholder.webp';
+  // API list endpoints return a flat `primaryImage` string instead of the `images` array
+  const imageFromArray = product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url;
+  const altText = product.images?.find((img) => img.isPrimary)?.altText;
+  const imageUrl = product.primaryImage || imageFromArray || '/images/placeholder.webp';
 
   const discount = product.compareAtPrice && product.compareAtPrice > product.basePrice
     ? Math.round(((Number(product.compareAtPrice) - Number(product.basePrice)) / Number(product.compareAtPrice)) * 100)
@@ -43,7 +45,7 @@ export function ProductCard({ product }: { product: Product }) {
         ) : (
           <Image
             src={imageUrl}
-            alt={primaryImage?.altText || product.name}
+            alt={altText || product.name}
             fill
             className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
             sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
